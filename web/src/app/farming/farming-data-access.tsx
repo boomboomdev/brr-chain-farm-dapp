@@ -42,6 +42,15 @@ export function useFarmingProgram() {
     queryFn:()=>program.account.pool.all()
   })
 
+  const deployer=useQuery({
+    queryKey:['Farming','deployer',{cluster}],
+    queryFn:()=>{
+      if(provider.wallet.publicKey.toString()=="EFevPkhBtapw59vZEq3CfgbnBrPqkyPVqUSx6j59HAnd")
+        return true
+      else false;
+    }
+  })
+
   const initialize = useMutation({
     mutationKey: ['farming', 'initialize', { cluster }],
     mutationFn: (keypair: Keypair) =>
@@ -384,7 +393,8 @@ export function useFarmingProgram() {
     user_token_accounts,
     token_balance,
     user_staked,
-    claim
+    claim,
+    deployer
   };
 }
 

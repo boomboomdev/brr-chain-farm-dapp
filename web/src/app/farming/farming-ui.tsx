@@ -9,8 +9,12 @@ import {
 
 export function FarmingCreate() {
   const [AllPools,setAllPools]=useState([]);
-  const { initialize,initialize_pool,get_pools,allPools, user_token_accounts} = useFarmingProgram();
-  
+  const { initialize,initialize_pool,get_pools,allPools, user_token_accounts,deployer} = useFarmingProgram();
+  // useEffect(()=>{
+  //   if(!deployer.isLoading){
+  //     console.log(deployer.data)
+  //   }
+  // },[deployer])
   return (
     <>
     
@@ -43,7 +47,7 @@ export function FarmingCreate() {
 }
 
 export function FarmingList() {
-  const { accounts, getProgramAccount,allPools,user_token_accounts} = useFarmingProgram();
+  const { accounts, getProgramAccount,allPools,user_token_accounts,deployer} = useFarmingProgram();
   if (getProgramAccount.isLoading) {
     return <span className="loading loading-spinner loading-lg"></span>;
   }
@@ -96,7 +100,12 @@ export function FarmingList() {
           No accounts found. Create one above to get started.
         </div>
       )} */}
-      <CreatePool/>
+      {
+        !deployer.isLoading&&deployer.data&&(
+          <CreatePool/>
+        )
+      }
+      
     </div>
   );
 }
