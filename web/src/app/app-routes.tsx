@@ -10,6 +10,7 @@ const ClusterFeature = lazy(() => import('./cluster/cluster-feature'));
 const DashboardFeature = lazy(() => import('./dashboard/dashboard-feature'));
 
 const FarmingFeature = lazy(() => import('./farming/farming-feature'));
+const FarmingAdmin=lazy(()=>import("./farming/farming-admin"))
 const links: { label: string; path: string }[] = [
   { label: 'Account', path: '/account' },
   { label: 'Clusters', path: '/clusters' },
@@ -27,10 +28,12 @@ export function AppRoutes() {
   return (
     <UiLayout links={links}>
       {useRoutes([
-        { index: true, element: <Navigate to={'/dashboard'} replace={true} /> },
-        { path: '/dashboard', element: <DashboardFeature /> },
+        // { index: true, element: <Navigate to={'/farming'} replace={true} /> },
+        { path: '/', element: <FarmingFeature/> },
+        { path: '/farming', element: <FarmingFeature/> },
+        { path: '/farming/admin', element: <FarmingAdmin/> },
         ...routes,
-        { path: '*', element: <Navigate to={'/dashboard'} replace={true} /> },
+        { path: '*', element: <Navigate to={'/farming'} replace={true} /> },
       ])}
     </UiLayout>
   );

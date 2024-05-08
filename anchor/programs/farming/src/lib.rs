@@ -19,7 +19,7 @@ use std::convert::TryFrom;
 /// Export for pool implementation
 pub mod pool;
 
-declare_id!("EmYtxFw6VXgVtKfFdKi8oN8Qm9ZY5KWNTDSwbaELW1ka");
+declare_id!("f9UbdcKhVdNLnD9K2g7ozUYUbjxHkupFJ3HBXkEcwMU");
 
 
 const PRECISION: u128 = 1_000_000_000;

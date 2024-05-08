@@ -45,7 +45,7 @@ export function useFarmingProgram() {
   const deployer=useQuery({
     queryKey:['Farming','deployer',{cluster}],
     queryFn:()=>{
-      if(provider.wallet.publicKey.toString()=="EFevPkhBtapw59vZEq3CfgbnBrPqkyPVqUSx6j59HAnd")
+      if(provider.wallet.publicKey.toString()=="E9Kg7GyZMY72hW1NewkYY78MBNkFaFbz4jFyC5uC3Dsv")
         return true
       else false;
     }
@@ -92,7 +92,7 @@ export function useFarmingProgram() {
         provider.wallet.publicKey,
         REWARD_DURATION
       );
-      program.methods.initializePool(REWARD_DURATION)
+      return program.methods.initializePool(REWARD_DURATION)
       .accounts({
         authority: provider.wallet.publicKey,
         base: provider.wallet.publicKey,
@@ -172,9 +172,9 @@ export function useFarmingProgram() {
         provider.wallet.publicKey,
       );
       const poolAccount = await program.account.pool.fetch(farmingPoolAddress);
-      await program.account.user.fetch(userStakingAddress)
+      return program.account.user.fetch(userStakingAddress)
       .then(async userAccount=>{
-        
+        console.log(userAccount)
         const tx=await program.methods
         .deposit(depositAmount)
         .accounts({
@@ -189,6 +189,7 @@ export function useFarmingProgram() {
         return tx;
       })
       .catch(async e=>{
+        console.log(e)
         await program.methods
         .createUser()
         .accounts({
@@ -336,6 +337,27 @@ export function useFarmingProgram() {
     }
   })
 
+  const charge_reward=useMutation({
+    mutationKey:['Farming','user-charge-token',{cluster}],
+    mutationFn:async ({pool}:{pool:PublicKey})=>{
+      const amount=new anchor.BN(2100000);
+      const tx=program.methods.chargeReward(amount)
+      .accounts({
+        signer:provider.wallet.publicKey,
+        pool:pool
+      })
+      .rpc()
+      return tx;
+    },
+    onSuccess:(data)=>{
+      transactionToast(data);
+      return data;
+    },
+    onError:()=>{
+
+    }
+  })
+
   const user_pda=useMutation({
     mutationKey:['Farming','user-pda',{cluster}],
     mutationFn:async ({pool}:{pool:string})=>{
@@ -394,7 +416,8 @@ export function useFarmingProgram() {
     token_balance,
     user_staked,
     claim,
-    deployer
+    deployer,
+    charge_reward
   };
 }
 
