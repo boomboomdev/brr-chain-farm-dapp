@@ -119,7 +119,7 @@
         }
       ],
       "args": [],
-      "returns": "u64"
+      "returns": "u128"
     },
     {
       "name": "initializePool",
@@ -911,7 +911,7 @@
           },
           {
             "name": "totalReward",
-            "type": "u64"
+            "type": "u128"
           }
         ]
       }
@@ -951,7 +951,7 @@
               "The amount of token B claimed.",
               "The amount of token A pending claim."
             ],
-            "type": "u64"
+            "type": "u128"
           },
           {
             "name": "balanceStaked",
@@ -967,6 +967,10 @@
               "Signer nonce."
             ],
             "type": "u8"
+          },
+          {
+            "name": "depositTime",
+            "type": "u64"
           }
         ]
       }
@@ -1008,7 +1012,7 @@
       "fields": [
         {
           "name": "amountA",
-          "type": "u64",
+          "type": "u128",
           "index": false
         }
       ]
@@ -1058,7 +1062,7 @@
     {
       "code": 6004,
       "name": "DurationTooShort",
-      "msg": "Duration cannot be shorter than one day."
+      "msg": "Duration cannot be shorter than 30 day."
     },
     {
       "code": 6005,
@@ -1087,6 +1091,6 @@
     }
   ],
   "metadata": {
-    "address": "f9UbdcKhVdNLnD9K2g7ozUYUbjxHkupFJ3HBXkEcwMU"
+    "address": "AFWVC6Apsx8QTiobptqzM8F1vNL9y9ie6mpdcGa4viqb"
   }
 }

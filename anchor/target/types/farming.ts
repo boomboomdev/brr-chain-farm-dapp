@@ -119,7 +119,7 @@ export type Farming = {
         }
       ],
       "args": [],
-      "returns": "u64"
+      "returns": "u128"
     },
     {
       "name": "initializePool",
@@ -911,7 +911,7 @@ export type Farming = {
           },
           {
             "name": "totalReward",
-            "type": "u64"
+            "type": "u128"
           }
         ]
       }
@@ -951,7 +951,7 @@ export type Farming = {
               "The amount of token B claimed.",
               "The amount of token A pending claim."
             ],
-            "type": "u64"
+            "type": "u128"
           },
           {
             "name": "balanceStaked",
@@ -967,6 +967,10 @@ export type Farming = {
               "Signer nonce."
             ],
             "type": "u8"
+          },
+          {
+            "name": "depositTime",
+            "type": "u64"
           }
         ]
       }
@@ -1008,7 +1012,7 @@ export type Farming = {
       "fields": [
         {
           "name": "amountA",
-          "type": "u64",
+          "type": "u128",
           "index": false
         }
       ]
@@ -1058,7 +1062,7 @@ export type Farming = {
     {
       "code": 6004,
       "name": "DurationTooShort",
-      "msg": "Duration cannot be shorter than one day."
+      "msg": "Duration cannot be shorter than 30 day."
     },
     {
       "code": 6005,
@@ -1209,7 +1213,7 @@ export const IDL: Farming = {
         }
       ],
       "args": [],
-      "returns": "u64"
+      "returns": "u128"
     },
     {
       "name": "initializePool",
@@ -2001,7 +2005,7 @@ export const IDL: Farming = {
           },
           {
             "name": "totalReward",
-            "type": "u64"
+            "type": "u128"
           }
         ]
       }
@@ -2041,7 +2045,7 @@ export const IDL: Farming = {
               "The amount of token B claimed.",
               "The amount of token A pending claim."
             ],
-            "type": "u64"
+            "type": "u128"
           },
           {
             "name": "balanceStaked",
@@ -2057,6 +2061,10 @@ export const IDL: Farming = {
               "Signer nonce."
             ],
             "type": "u8"
+          },
+          {
+            "name": "depositTime",
+            "type": "u64"
           }
         ]
       }
@@ -2098,7 +2106,7 @@ export const IDL: Farming = {
       "fields": [
         {
           "name": "amountA",
-          "type": "u64",
+          "type": "u128",
           "index": false
         }
       ]
@@ -2148,7 +2156,7 @@ export const IDL: Farming = {
     {
       "code": 6004,
       "name": "DurationTooShort",
-      "msg": "Duration cannot be shorter than one day."
+      "msg": "Duration cannot be shorter than 30 day."
     },
     {
       "code": 6005,

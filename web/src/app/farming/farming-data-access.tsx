@@ -10,7 +10,7 @@ import { useAnchorProvider } from '../solana/solana-provider';
 import { useTransactionToast } from '../ui/ui-layout';
 import {getPoolPda,getUserPda,getRewardAVaultPda,getStakingVaultPda} from './utils'
 import * as anchor from '@coral-xyz/anchor';
-import {ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID,createAssociatedTokenAccount,createMint,getAssociatedTokenAddressSync,mintTo} from '@solana/spl-token'
+import {ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID,TOKEN_2022_PROGRAM_ID,getAssociatedTokenAddressSync,mintTo} from '@solana/spl-token'
 
 export function useFarmingProgram() {
 
@@ -42,14 +42,6 @@ export function useFarmingProgram() {
     queryFn:()=>program.account.pool.all()
   })
 
-  const deployer=useQuery({
-    queryKey:['Farming','deployer',{cluster}],
-    queryFn:()=>{
-      if(provider.wallet.publicKey.toString()=="E9Kg7GyZMY72hW1NewkYY78MBNkFaFbz4jFyC5uC3Dsv")
-        return true
-      else false;
-    }
-  })
 
   const initialize = useMutation({
     mutationKey: ['farming', 'initialize', { cluster }],
@@ -92,6 +84,8 @@ export function useFarmingProgram() {
         provider.wallet.publicKey,
         REWARD_DURATION
       );
+      const accountInfo=await provider.connection.getAccountInfo(stakingMint);
+      // return console.log(accountInfo?.owner.toString())
       return program.methods.initializePool(REWARD_DURATION)
       .accounts({
         authority: provider.wallet.publicKey,
@@ -111,7 +105,8 @@ export function useFarmingProgram() {
         return tx;
       })
       .catch(e=>{
-        transactionToast("Already existing pool!");
+        console.log(e)
+        // transactionToast("Already existing pool!");
       });
     },
     onSuccess:(signature)=>{
@@ -416,7 +411,6 @@ export function useFarmingProgram() {
     token_balance,
     user_staked,
     claim,
-    deployer,
     charge_reward
   };
 }

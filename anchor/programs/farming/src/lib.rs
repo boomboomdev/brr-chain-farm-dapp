@@ -12,18 +12,20 @@ use crate::pool::*;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{clock, sysvar};
 use anchor_spl::token::spl_token;
+use anchor_spl::token_2022::spl_token_2022;
 use anchor_spl::token::{self, Mint, Token, TokenAccount};
+// use anchor_spl::token_2022::{self,  Token2022};
 use std::convert::TryFrom;
 
 
 /// Export for pool implementation
 pub mod pool;
 
-declare_id!("f9UbdcKhVdNLnD9K2g7ozUYUbjxHkupFJ3HBXkEcwMU");
+declare_id!("AFWVC6Apsx8QTiobptqzM8F1vNL9y9ie6mpdcGa4viqb");
 
 
 const PRECISION: u128 = 1_000_000_000;
-const TOTAL_ANNUAL_REWARD:u64=2_100_000;
+const TOTAL_ANNUAL_REWARD:u128=2_100_000;
 
 /// Updates the pool with the total reward per token that is due stakers
 /// Using the calculator specific to that pool version which uses the reward
@@ -55,29 +57,33 @@ pub fn update_rewards(
 
         
 
-        let mut time_period_days:u64= time_period.checked_div(1).unwrap().into();//seconds
+        let mut time_period_days:u128= time_period.checked_div(86400).unwrap().into();//seconds
         if time_period_days<1 {
             time_period_days=1;
         }
-        let mut pool_balance_factor=total_staked;
+        let mut pool_balance_factor:u128=total_staked.into();
         if pool_balance_factor<1 {
             pool_balance_factor=1;
         }
+        let mut balance_staked:u128=u.balance_staked.into();
+        if balance_staked<1 {
+            balance_staked=1;
+        }
 
-        let mut reward_unit:u64=TOTAL_ANNUAL_REWARD
-        .checked_mul(u.balance_staked.into())
+        let mut reward_unit:u128=TOTAL_ANNUAL_REWARD
+        .checked_div(365)
+        .unwrap()
+        .checked_mul(balance_staked)
+        .unwrap()
+        .checked_div(pool_balance_factor)
         .unwrap()
         .checked_mul(time_period_days.into())
-        .unwrap()
-        .checked_div(pool_balance_factor.into())
-        .unwrap()
-        .checked_div(365)
         .unwrap()
         .into();
 
 
         // u.reward_a_per_token_pending=time_period_days.into();
-        let mut reward_pending:u64=0;
+        let mut reward_pending:u128=0;
         if time_period_days<1 {//less than 1 seconds
             reward_pending = 0;
         }
@@ -150,7 +156,7 @@ pub mod farming {
   }
 
   ///Get Total Reward remaining in Pool
-  pub fn remaining_reward(ctx:Context<RemainingReward>)->Result<u64>{
+  pub fn remaining_reward(ctx:Context<RemainingReward>)->Result<u128>{
       let pool=&mut ctx.accounts.pool;
       Ok(pool.total_reward)
   }
@@ -199,7 +205,12 @@ pub mod farming {
       // user.reward_b_per_token_pending = 0;
       user.balance_staked = 0;
       user.nonce = *ctx.bumps.get("user").unwrap();
-
+      let current_time:u64 = clock::Clock::get()
+              .unwrap()
+              .unix_timestamp
+              .try_into()
+              .unwrap();
+        user.deposit_time=current_time;
       let pool = &mut ctx.accounts.pool;
       pool.user_stake_count = pool.user_stake_count.checked_add(1).unwrap();
       Ok(())
@@ -277,8 +288,22 @@ pub mod farming {
           return Err(ErrorCode::InsufficientFundWithdraw.into());
       }
 
+      
+      let current_time:u64 = clock::Clock::get()
+        .unwrap()
+        .unix_timestamp
+        .try_into()
+        .unwrap();
+        ////
+      let time_period:u64=current_time.checked_sub(ctx.accounts.user.deposit_time).unwrap().into();
+      let time_period_days:u64=time_period.checked_div(86400).unwrap().into();
+      if time_period_days<30 {
+        return Err(ErrorCode::DurationTooShort.into());
+      }
+      //////
       let user_opt = Some(&mut ctx.accounts.user);
       update_rewards(pool, user_opt, pool.total_staked).unwrap();
+      pool.last_update_time=current_time;
       ctx.accounts.user.balance_staked = ctx
           .accounts
           .user
@@ -314,12 +339,6 @@ pub mod farming {
               .total_staked
               .checked_sub(spt_amount)
               .ok_or(ErrorCode::MathOverflow)?;
-          let current_time = clock::Clock::get()
-              .unwrap()
-              .unix_timestamp
-              .try_into()
-              .unwrap();
-          pool.last_update_time=current_time;
           emit!(EventWithdraw { amount: spt_amount });
       }
       Ok(())
@@ -408,7 +427,7 @@ pub mod farming {
           .unwrap();
       pool.last_update_time = current_time;
       pool.reward_duration_end = current_time.checked_add(pool.reward_duration).unwrap();
-      pool.total_reward=pool.total_reward.checked_add(amount_a).unwrap();
+      pool.total_reward=pool.total_reward.checked_add(amount_a.into()).unwrap();
 
       emit!(EventFund { amount_a});
       Ok(())
@@ -417,15 +436,23 @@ pub mod farming {
   /// User claim rewards
   pub fn claim(ctx: Context<ClaimReward>) -> Result<()> {
       let pool = &mut ctx.accounts.pool;
-      let current_time = clock::Clock::get()
+      let current_time :u64 = clock::Clock::get()
           .unwrap()
           .unix_timestamp
           .try_into()
           .unwrap();
+          
+    /////////////////////
+    let time_period:u64=current_time.checked_sub(ctx.accounts.user.deposit_time).unwrap().into();
+      let time_period_days:u64=time_period.checked_div(86400).unwrap().into();
+      if time_period < 30 {
+        return Err(ErrorCode::DurationTooShort.into());
+      }
+      /////////////////////
       
       let user_opt = Some(&mut ctx.accounts.user);
       update_rewards(pool, user_opt, pool.total_staked).unwrap();
-
+      
       pool.last_update_time=current_time;
 
       let reward_duration = ctx.accounts.pool.reward_duration.to_be_bytes();
@@ -439,16 +466,16 @@ pub mod farming {
       ];
       let pool_signer = &[&seeds[..]];
 
-      let mut claimed_reward_a: u64 = 0;
+      let mut claimed_reward_a: u128 = 0;
       // let mut claimed_reward_b: u64 = 0;
 
       if ctx.accounts.user.reward_a_per_token_pending > 0 {
           let mut reward_amount = ctx.accounts.user.reward_a_per_token_pending;
-          let vault_balance = ctx.accounts.reward_a_vault.amount;
+          let vault_balance:u128 = ctx.accounts.reward_a_vault.amount.into();
 
           ctx.accounts.user.reward_a_per_token_pending = 0;
           if vault_balance < reward_amount {
-              reward_amount = vault_balance;
+              reward_amount = vault_balance.into();
           }
 
           if reward_amount > 0 {
@@ -461,7 +488,7 @@ pub mod farming {
                   },
                   pool_signer,
               );
-              token::transfer(cpi_ctx, reward_amount)?;
+              token::transfer(cpi_ctx, reward_amount.try_into().unwrap())?;
               claimed_reward_a = reward_amount;
           }
       }
@@ -1148,7 +1175,7 @@ pub struct Pool {
     pub pool_bump: u8, // 1
     /// Total staked amount
     pub total_staked: u64,
-    pub total_reward:u64
+    pub total_reward:u128
 }
 
 impl Pool {
@@ -1176,13 +1203,15 @@ pub struct User {
     /// The amount of token B claimed.
     // pub reward_b_per_token_complete: u128,
     /// The amount of token A pending claim.
-    pub reward_a_per_token_pending: u64,
+    pub reward_a_per_token_pending: u128,
     /// The amount of token B pending claim.
     // pub reward_b_per_token_pending: u64,
     /// The amount staked.
     pub balance_staked: u64,
     /// Signer nonce.
     pub nonce: u8,
+    ////deposit date
+    pub deposit_time:u64
 }
 
 
@@ -1221,7 +1250,7 @@ pub struct EventFund {
 /// Claim event
 #[event]
 pub struct EventClaim {
-    amount_a: u64,
+    amount_a: u128,
     // amount_b: u64,
 }
 
@@ -1253,7 +1282,7 @@ pub enum ErrorCode {
     #[msg("Pool is paused.")]
     PoolPaused,
     /// Duration cannot be shorter than one day.
-    #[msg("Duration cannot be shorter than one day.")]
+    #[msg("Duration cannot be shorter than 30 day.")]
     DurationTooShort,
     /// Provided funder is already authorized to fund.
     #[msg("Provided funder is already authorized to fund.")]
@@ -1269,7 +1298,7 @@ pub enum ErrorCode {
     CannotDeauthorizeMissingAuthority,
     /// Math opeartion overflow
     #[msg("Math operation overflow")]
-    MathOverflow,
+    MathOverflow
 }
 
 impl Debug for User {

@@ -58,7 +58,16 @@ const CreatePool=()=>{
             </div>
             
           </div>
-          <div className='mt-2' >
+          <div className="relative flex gap-x-3 mt-5 w-1/3">
+            <div className="flex h-6 items-center">
+                <input id="offers" name="offers" type="checkbox" className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"/>
+            </div>
+            <div className="text-sm leading-6">
+                <label htmlFor="offers" className="font-medium text-gray-900">SPL-2022</label>
+                {/* <p className="text-gray-500">Get notified when a candidate accepts or rejects an offer.</p> */}
+            </div>
+        </div>
+          <div className='mt-2 flex items-center justify-around' >
             <button type="button" onClick={e=>initPool()} className="rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Initialize</button>
           </div>
         </div>
@@ -119,7 +128,7 @@ const CreatePool=()=>{
             </div>
             <div className='flex items-center justify-around mt-2' >
                 <button type="button" onClick={e=>charge_reward.mutateAsync({pool:account.publicKey})} className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Charge reward</button>
-                <button type="button"  className="rounded-md bg-pink-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-600">Cloase pool</button>
+                <button type="button"  className="rounded-md bg-pink-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-600">Close pool</button>
             </div>
           
         </div>
